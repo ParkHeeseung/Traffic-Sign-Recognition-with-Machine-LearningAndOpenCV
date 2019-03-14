@@ -61,7 +61,7 @@ int main(int, char**)
 	Mat img_input, img_result, img_gray;
 
 	//이미지파일을 로드하여 image에 저장
-	img_input = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/background.jpeg", IMREAD_COLOR);
+	img_input = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/다운로드.jpeg", IMREAD_COLOR);
 	if (img_input.empty())
 	{
 		cout << "Could not open or find the image" << std::endl;
@@ -91,7 +91,10 @@ int main(int, char**)
 		if (fabs(contourArea(Mat(approx))) > 500)  //면적이 일정크기 이상이어야 한다.
 		{
 
+
 			int size = approx.size();
+
+      cout << approx << endl;
 
 			//Contour를 근사화한 직선을 그린다.
 			if (size % 2 == 0) {

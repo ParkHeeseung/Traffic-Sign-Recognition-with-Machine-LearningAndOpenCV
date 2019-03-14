@@ -43,7 +43,7 @@ int main(){
 
   //Load the Images
   Mat image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/stop.png", CV_LOAD_IMAGE_GRAYSCALE );
-  Mat image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/background.jpeg", CV_LOAD_IMAGE_GRAYSCALE );
+  Mat image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/다운로드.jpeg", CV_LOAD_IMAGE_GRAYSCALE );
 
   //Check whether images have been loaded
   if( !image_obj.data){
@@ -81,7 +81,7 @@ int main(){
   vector< vector<DMatch> > matches;
   matcher->knnMatch( descriptors_obj, descriptors_scene, matches, 2 );
 
-  const float ratio_thresh = 0.7f;
+  const float ratio_thresh = 0.8f;
   vector< DMatch > good_matches;
 
   for(size_t i = 0; i < matches.size(); i++){
