@@ -2,6 +2,7 @@
 #include <fstream>
 #include <ctime>
 #include <queue>
+#include <string>
 #include <cv.h>
 #include <unistd.h>
 #include <highgui.h>
@@ -37,15 +38,28 @@ const Vec3b HSV_YELLOW_UPPER = Vec3b(40, 140, 255);
 const Vec3b HLS_YELLOW_LOWER = Vec3b(20, 120, 80);
 const Vec3b HLS_YELLOW_UPPER = Vec3b(45, 200, 255);
 
-int main(){
+const Vec3b HSV_RED_LOWER = Vec3b(0, 100, 100);
+const Vec3b HSV_RED_UPPER = Vec3b(10, 255, 255);
+const Vec3b HSV_RED_LOWER1 = Vec3b(160, 100, 100);
+const Vec3b HSV_RED_UPPER1 = Vec3b(179, 255, 255);
 
 
 
-  //Load the Images
+int main(int, char**)
+{
+	Mat img_input, img_result, img_gray, img_canny;
+	Mat dilated;
+
+
+    //Load the Images
   Mat image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/stop.png", CV_LOAD_IMAGE_GRAYSCALE );
-  Mat image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/다운로드.jpeg", CV_LOAD_IMAGE_GRAYSCALE );
+  Mat image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/다운로드 (1).jpeg");
 
-  //Check whether images have been loaded
+	resize( image_scene, image_scene, Size( image_scene.cols * 2, image_scene.rows * 2), 0, 0, CV_INTER_NN );
+
+
+  imshow("origin", image_scene);
+    //Check whether images have been loaded
   if( !image_obj.data){
     cerr<< " --(!) Error reading image1 " << endl;
     return -1;
@@ -54,6 +68,43 @@ int main(){
     cerr<< " --(!) Error reading image2 " << endl;
     return -1;
   }
+
+  Mat hsvImg, binaryImg, binaryImg1;
+
+  cvtColor(image_scene, hsvImg, CV_BGR2HSV);
+  imshow("hsv", hsvImg);
+  cout << "hi" << endl;
+
+  inRange(hsvImg, HSV_RED_LOWER, HSV_RED_UPPER, binaryImg);
+  inRange(hsvImg, HSV_RED_LOWER1, HSV_RED_UPPER1, binaryImg1);
+
+  binaryImg = binaryImg | binaryImg1;
+
+	// for(int i = 0; i < 10; i++){
+	//
+	// 	dilate(binaryImg, binaryImg, Mat());
+	// }
+
+
+	Mat element11(11, 11, CV_8U, Scalar(1));
+
+ morphologyEx(binaryImg, binaryImg,MORPH_CLOSE,element11);
+
+
+	vector<vector<Point> > contours;
+	findContours(binaryImg, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
+
+	Mat dst = Mat::zeros(image_scene.rows, image_scene.cols, CV_8UC1);
+
+	drawContours( dst, contours,  -1, cv::Scalar(255), CV_FILLED);
+
+	Mat fillter_img;
+	image_scene.copyTo(fillter_img, dst);
+
+	image_scene = fillter_img.clone();
+
+
+
 
   // resize( image_obj, image_obj, Size( image_scene.cols, image_scene.rows), 0, 0, CV_INTER_NN );
 
@@ -81,7 +132,7 @@ int main(){
   vector< vector<DMatch> > matches;
   matcher->knnMatch( descriptors_obj, descriptors_scene, matches, 2 );
 
-  const float ratio_thresh = 0.7f;
+  const float ratio_thresh = 0.8f;
   vector< DMatch > good_matches;
 
   for(size_t i = 0; i < matches.size(); i++){
@@ -140,5 +191,12 @@ int main(){
   imshow("DetectedImage", img_matches );
   waitKey(0);
 
-  return 0;
+
+	imshow("s", dst);
+
+
+	waitKey(0);
+
+
+	return 0;
 }

@@ -28,40 +28,14 @@ const CvScalar COLOR_BLUE = CvScalar(255, 0, 0);
 const CvScalar COLOR_RED = CvScalar(0, 0, 255);
 const CvScalar COLOR_GREEN = CvScalar(0, 255, 0);
 
-const Vec3b RGB_WHITE_LOWER = Vec3b(100, 100, 190);
-const Vec3b RGB_WHITE_UPPER = Vec3b(255, 255, 255);
-const Vec3b RGB_YELLOW_LOWER = Vec3b(225, 180, 0);
-const Vec3b RGB_YELLOW_UPPER = Vec3b(255, 255, 170);
-const Vec3b HSV_YELLOW_LOWER = Vec3b(20, 20, 130);
-const Vec3b HSV_YELLOW_UPPER = Vec3b(40, 140, 255);
-
-const Vec3b HLS_YELLOW_LOWER = Vec3b(20, 120, 80);
-const Vec3b HLS_YELLOW_UPPER = Vec3b(45, 200, 255);
-
-
-void setLabel(Mat& image, string str, vector<Point> contour)
-{
-	int fontface = FONT_HERSHEY_SIMPLEX;
-	double scale = 0.5;
-	int thickness = 1;
-	int baseline = 0;
-
-	Size text = getTextSize(str, fontface, scale, thickness, &baseline);
-	Rect r = boundingRect(contour);
-
-	Point pt(r.x + ((r.width - text.width) / 2), r.y + ((r.height + text.height) / 2));
-	rectangle(image, pt + Point(0, baseline), pt + Point(text.width, -text.height), CV_RGB(200, 200, 200), FILLED);
-	putText(image, str, pt, fontface, scale, CV_RGB(0, 0, 0), thickness, 8);
-}
-
-
 
 int main(int, char**)
 {
-	Mat img_input, img_result, img_gray;
+	Mat img_input, img_result, img_gray, img_canny;
+	Mat dilated;
 
 	//이미지파일을 로드하여 image에 저장
-	img_input = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/다운로드.jpeg", IMREAD_COLOR);
+	img_input = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/thumb_d_B34FFCCD9E4F41FA022E96D1BC5E9465.jpg", IMREAD_COLOR);
 	if (img_input.empty())
 	{
 		cout << "Could not open or find the image" << std::endl;
@@ -72,69 +46,26 @@ int main(int, char**)
 	//그레이스케일 이미지로 변환
 	cvtColor(img_input, img_gray, COLOR_BGR2GRAY);
 
-	//이진화 이미지로 변환
-	Mat binary_image;
-	threshold(img_gray, img_gray, 125, 255, THRESH_BINARY_INV | THRESH_OTSU);
+	Canny(img_gray, img_canny, 150, 270);
 
-	//contour를 찾는다.
+	dilate(img_canny, dilated, Mat());
+
+	imshow ("canny ", dilated);
+
 	vector<vector<Point> > contours;
-	findContours(img_gray, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
+	findContours(dilated, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
 
-	//contour를 근사화한다.
-	vector<Point2f> approx;
-	img_result = img_input.clone();
+	Mat dst = Mat::zeros(img_input.rows, img_input.cols, CV_8UC1);
 
-	for (size_t i = 0; i < contours.size(); i++)
-	{
-		approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true)*0.02, true);
+	drawContours( dst, contours,  -1, cv::Scalar(255), CV_FILLED);
 
-		if (fabs(contourArea(Mat(approx))) > 500)  //면적이 일정크기 이상이어야 한다.
-		{
+	Mat fillter_img;
+	img_gray.copyTo(fillter_img, dst);
 
+	dst = fillter_img.clone();
 
-			int size = approx.size();
-
-      cout << approx << endl;
-
-			//Contour를 근사화한 직선을 그린다.
-			if (size % 2 == 0) {
-				line(img_result, approx[0], approx[approx.size() - 1], Scalar(0, 255, 0), 3);
-
-				for (int k = 0; k < size - 1; k++)
-					line(img_result, approx[k], approx[k + 1], Scalar(0, 255, 0), 3);
-
-				for (int k = 0; k < size; k++)
-					circle(img_result, approx[k], 3, Scalar(0, 0, 255));
-			}
-			else {
-				line(img_result, approx[0], approx[approx.size() - 1], Scalar(0, 255, 0), 3);
-
-				for (int k = 0; k < size - 1; k++)
-					line(img_result, approx[k], approx[k + 1], Scalar(0, 255, 0), 3);
-
-				for (int k = 0; k < size; k++)
-					circle(img_result, approx[k], 3, Scalar(0, 0, 255));
-			}
-
-
-
-			//도형을 판정한다.
-			if (size == 3)
-				setLabel(img_result, "triangle", contours[i]);
-
-      else if (size == 4 && isContourConvex(Mat(approx)))
-        setLabel(img_result, "Square", contours[i]);
-
-			else if (size == 8 && isContourConvex(Mat(approx)))
-				setLabel(img_result, "octagon", contours[i]);
-
-		}
-
-	}
-
-
+	imshow("s", dst);
 	imshow("input", img_input);
-	imshow("result", img_result);
 
 
 	waitKey(0);

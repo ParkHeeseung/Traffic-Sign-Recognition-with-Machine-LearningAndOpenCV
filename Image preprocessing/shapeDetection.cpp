@@ -63,7 +63,7 @@ int main(int, char**)
 	Mat img_input, img_result, img_gray;
 
 	//이미지파일을 로드하여 image에 저장
-	img_input = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/다운로드.jpeg", IMREAD_COLOR);
+	img_input = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/다운로드 (1).jpeg", IMREAD_COLOR);
 	if (img_input.empty())
 	{
 		cout << "Could not open or find the image" << std::endl;
