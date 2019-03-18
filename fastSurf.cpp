@@ -32,11 +32,14 @@ const Vec3b RGB_WHITE_LOWER = Vec3b(100, 100, 190);
 const Vec3b RGB_WHITE_UPPER = Vec3b(255, 255, 255);
 const Vec3b RGB_YELLOW_LOWER = Vec3b(225, 180, 0);
 const Vec3b RGB_YELLOW_UPPER = Vec3b(255, 255, 170);
-const Vec3b HSV_YELLOW_LOWER = Vec3b(20, 20, 130);
+const Vec3b HSV_YELLOW_LOWER = Vec3b(0, 120, 130);
 const Vec3b HSV_YELLOW_UPPER = Vec3b(40, 140, 255);
 
 const Vec3b HLS_YELLOW_LOWER = Vec3b(20, 120, 80);
 const Vec3b HLS_YELLOW_UPPER = Vec3b(45, 200, 255);
+
+const Vec3b HSV_BLUE_LOWER = Vec3b(80, 200, 100);
+const Vec3b HSV_BLUE_UPPER = Vec3b(120, 255, 160);
 
 const Vec3b HSV_RED_LOWER = Vec3b(0, 100, 100);
 const Vec3b HSV_RED_UPPER = Vec3b(10, 255, 255);
@@ -52,11 +55,13 @@ int main(int, char**)
 
 
     //Load the Images
-  Mat image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/stop.png", CV_LOAD_IMAGE_GRAYSCALE );
-  Mat image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/다운로드 (1).jpeg");
+  Mat image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/curve.png", CV_LOAD_IMAGE_GRAYSCALE );
+  Mat image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/IMG_1608.JPG");
 
-	resize( image_scene, image_scene, Size( image_scene.cols * 2, image_scene.rows * 2), 0, 0, CV_INTER_NN );
+	resize( image_obj, image_obj, Size(150, 150), 0, 0, CV_INTER_NN );
+	resize( image_scene, image_scene, Size( 200, 200), 0, 0, CV_INTER_NN );
 
+	Mat temp_image_scene = image_scene.clone();
 
   imshow("origin", image_scene);
     //Check whether images have been loaded
@@ -69,6 +74,7 @@ int main(int, char**)
     return -1;
   }
 
+
   Mat hsvImg, binaryImg, binaryImg1;
 
   cvtColor(image_scene, hsvImg, CV_BGR2HSV);
@@ -79,6 +85,17 @@ int main(int, char**)
   inRange(hsvImg, HSV_RED_LOWER1, HSV_RED_UPPER1, binaryImg1);
 
   binaryImg = binaryImg | binaryImg1;
+
+	inRange(hsvImg, HSV_YELLOW_LOWER, HSV_YELLOW_UPPER, binaryImg1);
+
+	binaryImg = binaryImg | binaryImg1;
+
+	inRange(hsvImg, HSV_BLUE_LOWER, HSV_BLUE_UPPER, binaryImg1);
+
+
+	binaryImg = binaryImg | binaryImg1;
+
+	imshow("blue", binaryImg);
 
 	// for(int i = 0; i < 10; i++){
 	//
@@ -94,14 +111,62 @@ int main(int, char**)
 	vector<vector<Point> > contours;
 	findContours(binaryImg, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
 
+
+	vector<vector<Point> > goodContours;
+
+///////////////
+		//contour를 근사화한다.
+		vector<Point2f> approx;
+
+		for (size_t i = 0; i < contours.size(); i++)
+		{
+			approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true)*0.02, true);
+
+			if (fabs(contourArea(Mat(approx))) > 10)  //면적이 일정크기 이상이어야 한다.
+			{
+
+
+				int size = approx.size();
+
+	      cout << approx << endl;
+
+				if(size > 3){
+
+					goodContours.push_back(contours.at(i));
+
+
+
+
+
+				}
+
+			}
+
+		}
+
+		/////////////////
+
+
+
+
+
+
+
+
+
 	Mat dst = Mat::zeros(image_scene.rows, image_scene.cols, CV_8UC1);
 
-	drawContours( dst, contours,  -1, cv::Scalar(255), CV_FILLED);
+	drawContours( dst, goodContours,  -1, cv::Scalar(255), CV_FILLED);
 
 	Mat fillter_img;
 	image_scene.copyTo(fillter_img, dst);
 
 	image_scene = fillter_img.clone();
+
+	cvtColor(image_scene, image_scene, CV_BGR2GRAY);
+
+
+	imshow("init", image_scene);
 
 
 
@@ -132,7 +197,7 @@ int main(int, char**)
   vector< vector<DMatch> > matches;
   matcher->knnMatch( descriptors_obj, descriptors_scene, matches, 2 );
 
-  const float ratio_thresh = 0.8f;
+  const float ratio_thresh = 0.7f;
   vector< DMatch > good_matches;
 
   for(size_t i = 0; i < matches.size(); i++){
@@ -142,6 +207,8 @@ int main(int, char**)
   }
 
   Mat img_matches;
+
+
   drawMatches( image_obj, keypoints_obj, image_scene, keypoints_scene,
                  good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
                  vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
