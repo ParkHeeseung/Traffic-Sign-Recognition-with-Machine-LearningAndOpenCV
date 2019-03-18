@@ -33,13 +33,13 @@ const Vec3b RGB_WHITE_UPPER = Vec3b(255, 255, 255);
 const Vec3b RGB_YELLOW_LOWER = Vec3b(225, 180, 0);
 const Vec3b RGB_YELLOW_UPPER = Vec3b(255, 255, 170);
 const Vec3b HSV_YELLOW_LOWER = Vec3b(0, 120, 130);
-const Vec3b HSV_YELLOW_UPPER = Vec3b(40, 140, 255);
+const Vec3b HSV_YELLOW_UPPER = Vec3b(40, 255, 255);
 
 const Vec3b HLS_YELLOW_LOWER = Vec3b(20, 120, 80);
 const Vec3b HLS_YELLOW_UPPER = Vec3b(45, 200, 255);
 
-const Vec3b HSV_BLUE_LOWER = Vec3b(80, 200, 100);
-const Vec3b HSV_BLUE_UPPER = Vec3b(120, 255, 160);
+const Vec3b HSV_BLUE_LOWER = Vec3b(80, 200, 65);
+const Vec3b HSV_BLUE_UPPER = Vec3b(120, 255, 130);
 
 const Vec3b HSV_RED_LOWER = Vec3b(0, 100, 100);
 const Vec3b HSV_RED_UPPER = Vec3b(10, 255, 255);
@@ -55,11 +55,11 @@ int main(int, char**)
 
 
     //Load the Images
-  Mat image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/curve.png", CV_LOAD_IMAGE_GRAYSCALE );
-  Mat image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/IMG_1608.JPG");
+  Mat image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/uturn.png", CV_LOAD_IMAGE_GRAYSCALE );
+  Mat image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/IMG_1609.JPG");
 
-	resize( image_obj, image_obj, Size(150, 150), 0, 0, CV_INTER_NN );
-	resize( image_scene, image_scene, Size( 200, 200), 0, 0, CV_INTER_NN );
+	resize( image_obj, image_obj, Size(200, 200), 0, 0, CV_INTER_NN );
+	resize( image_scene, image_scene, Size( 1000, 1000), 0, 0, CV_INTER_NN );
 
 	Mat temp_image_scene = image_scene.clone();
 
@@ -75,27 +75,31 @@ int main(int, char**)
   }
 
 
-  Mat hsvImg, binaryImg, binaryImg1;
+  Mat hsvImg, binaryImg, binaryImg1, binaryImg2;
 
   cvtColor(image_scene, hsvImg, CV_BGR2HSV);
   imshow("hsv", hsvImg);
   cout << "hi" << endl;
 
-  inRange(hsvImg, HSV_RED_LOWER, HSV_RED_UPPER, binaryImg);
-  inRange(hsvImg, HSV_RED_LOWER1, HSV_RED_UPPER1, binaryImg1);
+  // inRange(hsvImg, HSV_RED_LOWER, HSV_RED_UPPER, binaryImg);
+  // inRange(hsvImg, HSV_RED_LOWER1, HSV_RED_UPPER1, binaryImg1);
+	//
+  // binaryImg = binaryImg | binaryImg1;
 
-  binaryImg = binaryImg | binaryImg1;
+	// imshow("red", binaryImg);
 
-	inRange(hsvImg, HSV_YELLOW_LOWER, HSV_YELLOW_UPPER, binaryImg1);
+	inRange(hsvImg, HSV_YELLOW_LOWER, HSV_YELLOW_UPPER, binaryImg);
 
-	binaryImg = binaryImg | binaryImg1;
+	// binaryImg = binaryImg1.clone();
+
+	imshow("yellow", binaryImg);
 
 	inRange(hsvImg, HSV_BLUE_LOWER, HSV_BLUE_UPPER, binaryImg1);
 
+	imshow("blue", binaryImg1);
 
-	binaryImg = binaryImg | binaryImg1;
+	binaryImg1 = binaryImg | binaryImg1;
 
-	imshow("blue", binaryImg);
 
 	// for(int i = 0; i < 10; i++){
 	//
@@ -103,13 +107,12 @@ int main(int, char**)
 	// }
 
 
-	Mat element11(11, 11, CV_8U, Scalar(1));
+	// Mat element11(11, 11, CV_8U, Scalar(1));
 
- morphologyEx(binaryImg, binaryImg,MORPH_CLOSE,element11);
-
+ // morphologyEx(binaryImg, binaryImg,MORPH_CLOSE,element11);
 
 	vector<vector<Point> > contours;
-	findContours(binaryImg, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
+	findContours(binaryImg1, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
 
 
 	vector<vector<Point> > goodContours;
@@ -118,31 +121,46 @@ int main(int, char**)
 		//contour를 근사화한다.
 		vector<Point2f> approx;
 
+		int max = -1;
+		int index = -1;
+
 		for (size_t i = 0; i < contours.size(); i++)
 		{
 			approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true)*0.02, true);
 
-			if (fabs(contourArea(Mat(approx))) > 10)  //면적이 일정크기 이상이어야 한다.
-			{
 
-
-				int size = approx.size();
-
-	      cout << approx << endl;
-
-				if(size > 3){
-
-					goodContours.push_back(contours.at(i));
-
-
-
-
-
-				}
-
+			if(fabs(contourArea(Mat(approx))) > max){
+				max = fabs(contourArea(Mat(approx)));
+				index = i;
 			}
+			// if (fabs(contourArea(Mat(approx))) > 10)  //면적이 일정크기 이상이어야 한다.
+			// {
+			//
+			//
+			//
+			// 	int size = approx.size();
+			//
+			// 	if(max < size){
+			// 		max = size;
+			// 	}
+			//
+	    //   cout << approx << endl;
+			//
+			// 	if(size >= 3){
+			//
+			// 		goodContours.push_back(contours.at(i));
+			//
+			//
+			//
+			//
+			//
+			// 	}
+			//
+			// }
 
 		}
+
+		goodContours.push_back(contours.at(index));
 
 		/////////////////
 
