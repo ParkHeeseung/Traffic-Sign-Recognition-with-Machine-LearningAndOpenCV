@@ -46,6 +46,14 @@ const Vec3b HSV_RED_UPPER = Vec3b(10, 255, 255);
 const Vec3b HSV_RED_LOWER1 = Vec3b(160, 100, 100);
 const Vec3b HSV_RED_UPPER1 = Vec3b(179, 255, 255);
 
+const int MAX_SIZE = 3;
+
+int unSharpMask[MAX_SIZE][MAX_SIZE] = { {0, -1, 0},
+																							{-1,  5, -1},
+																							{0, -1, 0} };
+
+void UnsharpMaskFilter(Mat & input, Mat & output, int mask[][MAX_SIZE]);
+
 
 
 int main(int, char**)
@@ -55,11 +63,11 @@ int main(int, char**)
 
 
     //Load the Images
-  Mat image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/uturn.png", CV_LOAD_IMAGE_GRAYSCALE );
-  Mat image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/IMG_1609.JPG");
+  Mat image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/curve.png", CV_LOAD_IMAGE_GRAYSCALE );
+  Mat image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/IMG_1608.jpg");
 
 	resize( image_obj, image_obj, Size(200, 200), 0, 0, CV_INTER_NN );
-	resize( image_scene, image_scene, Size( 1000, 1000), 0, 0, CV_INTER_NN );
+	resize( image_scene, image_scene, Size( 200, 200), 0, 0, CV_INTER_NN );
 
 	Mat temp_image_scene = image_scene.clone();
 
@@ -103,7 +111,7 @@ int main(int, char**)
 
 	// for(int i = 0; i < 10; i++){
 	//
-	// 	dilate(binaryImg, binaryImg, Mat());
+		dilate(binaryImg, binaryImg, Mat());
 	// }
 
 
@@ -132,6 +140,8 @@ int main(int, char**)
 			if(fabs(contourArea(Mat(approx))) > max){
 				max = fabs(contourArea(Mat(approx)));
 				index = i;
+
+
 			}
 			// if (fabs(contourArea(Mat(approx))) > 10)  //면적이 일정크기 이상이어야 한다.
 			// {
@@ -160,7 +170,49 @@ int main(int, char**)
 
 		}
 
+		int xMax = -1;
+		int xMin = 9999;
+		int yMax = -1;
+		int yMin = 9999;
+
+		cout << "ROI_Value" << contours.at(index) << endl;
+
+		vector <Point> temp = contours.at(index);
+
+		for(size_t i = 0; i < temp.size(); i++){
+			cout << "Element => " << temp.at(i).x << endl;
+
+			int tempX = temp.at(i).x;
+			int tempY = temp.at(i).y;
+
+			if(xMax < tempX){
+				xMax = tempX;
+			}
+			else if(xMin > tempX){
+				xMin = tempX;
+			}
+
+			if(yMax < tempY){
+				yMax = tempY;
+			}
+			else if(yMin > tempY){
+				yMin = tempY;
+			}
+
+
+		}
+
+		cout << "xMax : " << xMax << " " << "xMin : " << xMin << endl;
+		cout << "yMax : " << yMax << " " << "yMin : " << yMin << endl;
+
 		goodContours.push_back(contours.at(index));
+
+		int xLen = xMax - xMin;
+		int yLen = yMax - yMin;
+
+		int roiSize = xLen > yLen ? xLen : yLen;
+
+		cout << "roiSize : " << roiSize << endl;
 
 		/////////////////
 
@@ -187,6 +239,21 @@ int main(int, char**)
 	imshow("init", image_scene);
 
 
+	Mat idealROI;
+	idealROI = image_scene(Rect(xMin, yMin, roiSize, roiSize));
+
+
+
+	resize( idealROI, idealROI, Size( 200, 200), 0, 0, CV_INTER_NN );
+
+	Mat sharpImg(200, 200, CV_8UC1);
+
+	// UnsharpMaskFilter(idealROI, sharpImg, unSharpMask);
+
+
+	imshow("idealROI", idealROI);
+
+	image_scene = idealROI.clone();
 
 
   // resize( image_obj, image_obj, Size( image_scene.cols, image_scene.rows), 0, 0, CV_INTER_NN );
@@ -260,7 +327,10 @@ int main(int, char**)
     std::vector<Point2f> scene_corners(4);
 
     //-- Step 9:Get the perspectiveTransform
-    perspectiveTransform( obj_corners, scene_corners, H);
+
+		if(H.data){
+			perspectiveTransform( obj_corners, scene_corners, H);
+		}
 
     //-- Step 10: Draw lines between the corners (the mapped object in the scene - image_2 )
     line( img_matches, scene_corners[0] + Point2f( image_obj.cols, 0), scene_corners[1] + Point2f( image_obj.cols, 0), Scalar(0, 255, 0), 4 );
@@ -284,4 +354,25 @@ int main(int, char**)
 
 
 	return 0;
+}
+
+void UnsharpMaskFilter(Mat & input, Mat & output, int mask[][MAX_SIZE]){
+
+
+	int height = input.rows;
+	int width = input.cols;
+  int size = height * width;
+
+	for(int i = MAX_SIZE / 2; i < height - MAX_SIZE / 2; i++){
+    for(int j = MAX_SIZE / 2; j < width - MAX_SIZE / 2; j++){
+      float sum = 0;
+      for(int x = -1; x <= 1; x++){
+        for(int y = -1; y <= 1; y ++){
+          sum += input.at<uchar>(i + x, j + y) * mask[MAX_SIZE / 2 + x][MAX_SIZE / 2 + y];
+        }
+      }
+      output.at<uchar>(i, j) = sum + 128;
+    }
+  }
+
 }
