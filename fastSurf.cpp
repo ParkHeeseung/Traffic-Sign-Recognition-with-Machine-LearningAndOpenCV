@@ -83,6 +83,19 @@ int main(int, char**)
   }
 
 
+	  	int height = image_obj.rows;
+	  	int width = image_obj.cols;
+	    int size = height * width;
+
+	    for(int i = 0; i < height; i++){
+	      for(int j = 0; j < width; j++){
+	        if(image_obj.at<uchar>(i, j) == 255){
+	          image_obj.at<uchar>(i, j) = 0;
+	        }
+	      }
+	    }
+
+
   Mat hsvImg, binaryImg, binaryImg1, binaryImg2;
 
   cvtColor(image_scene, hsvImg, CV_BGR2HSV);
@@ -238,9 +251,10 @@ int main(int, char**)
 
 	imshow("init", image_scene);
 
-
+////////////////////insert/////////////////
 	Mat idealROI;
-	idealROI = image_scene(Rect(xMin, yMin, roiSize, roiSize));
+	idealROI = image_scene(Rect(xMin, yMin, xMin + roiSize + roiSize / 2 > 200 ? ,\
+		 roiSize + roiSize + roiSize / 2));
 
 
 
@@ -250,8 +264,13 @@ int main(int, char**)
 
 	// UnsharpMaskFilter(idealROI, sharpImg, unSharpMask);
 
+	// GaussianBlur(idealROI, sharpImg, Size(5, 5), 0);
+	// GaussianBlur(image_obj, image_obj, Size(5, 5), 0);
 
-	imshow("idealROI", idealROI);
+
+
+
+	// imshow("idealROI", sharpImg);
 
 	image_scene = idealROI.clone();
 
@@ -373,6 +392,14 @@ void UnsharpMaskFilter(Mat & input, Mat & output, int mask[][MAX_SIZE]){
       }
       output.at<uchar>(i, j) = sum + 128;
     }
-  }
 
 }
+}
+
+
+
+//
+// void ImageProprecessing(){
+//
+//
+// }
