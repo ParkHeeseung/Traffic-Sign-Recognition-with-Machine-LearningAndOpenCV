@@ -61,17 +61,19 @@ int main(int, char**)
 	Mat img_input, img_result, img_gray, img_canny;
 	Mat dilated;
 
+	clock_t begin, end;
+	begin = clock();
 
     //Load the Images
-  Mat image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/curve.png", CV_LOAD_IMAGE_GRAYSCALE );
-  Mat image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/IMG_1608.jpg");
+  Mat image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/다운로드.jpeg", CV_LOAD_IMAGE_GRAYSCALE );
+  Mat image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/IMG_1534.JPG");
 
 	resize( image_obj, image_obj, Size(200, 200), 0, 0, CV_INTER_NN );
 	resize( image_scene, image_scene, Size( 200, 200), 0, 0, CV_INTER_NN );
 
 	Mat temp_image_scene = image_scene.clone();
 
-  imshow("origin", image_scene);
+  // imshow("origin", image_scene);
     //Check whether images have been loaded
   if( !image_obj.data){
     cerr<< " --(!) Error reading image1 " << endl;
@@ -83,23 +85,11 @@ int main(int, char**)
   }
 
 
-	  	int height = image_obj.rows;
-	  	int width = image_obj.cols;
-	    int size = height * width;
-
-	    for(int i = 0; i < height; i++){
-	      for(int j = 0; j < width; j++){
-	        if(image_obj.at<uchar>(i, j) == 255){
-	          image_obj.at<uchar>(i, j) = 0;
-	        }
-	      }
-	    }
-
 
   Mat hsvImg, binaryImg, binaryImg1, binaryImg2;
 
   cvtColor(image_scene, hsvImg, CV_BGR2HSV);
-  imshow("hsv", hsvImg);
+  // imshow("hsv", hsvImg);
   cout << "hi" << endl;
 
   // inRange(hsvImg, HSV_RED_LOWER, HSV_RED_UPPER, binaryImg);
@@ -107,25 +97,24 @@ int main(int, char**)
 	//
   // binaryImg = binaryImg | binaryImg1;
 
-	// imshow("red", binaryImg);
 
 	inRange(hsvImg, HSV_YELLOW_LOWER, HSV_YELLOW_UPPER, binaryImg);
 
 	// binaryImg = binaryImg1.clone();
 
-	imshow("yellow", binaryImg);
+	// imshow("yellow", binaryImg);
 
 	inRange(hsvImg, HSV_BLUE_LOWER, HSV_BLUE_UPPER, binaryImg1);
 
-	imshow("blue", binaryImg1);
+	// imshow("blue", binaryImg1);
 
 	binaryImg1 = binaryImg | binaryImg1;
 
 
-	// for(int i = 0; i < 10; i++){
-	//
-		dilate(binaryImg, binaryImg, Mat());
-	// }
+	for(int i = 0; i < 10; i++){
+
+		dilate(binaryImg1, binaryImg1, Mat());
+	}
 
 
 	// Mat element11(11, 11, CV_8U, Scalar(1));
@@ -233,11 +222,12 @@ int main(int, char**)
 
 
 
-
+		cout << "hi : " << image_scene.rows << endl;
 
 
 
 	Mat dst = Mat::zeros(image_scene.rows, image_scene.cols, CV_8UC1);
+
 
 	drawContours( dst, goodContours,  -1, cv::Scalar(255), CV_FILLED);
 
@@ -249,16 +239,23 @@ int main(int, char**)
 	cvtColor(image_scene, image_scene, CV_BGR2GRAY);
 
 
-	imshow("init", image_scene);
+	// imshow("init", image_scene);
 
 ////////////////////insert/////////////////
 	Mat idealROI;
-	idealROI = image_scene(Rect(xMin, yMin, xMin + roiSize + roiSize / 2 > 200 ? ,\
-		 roiSize + roiSize + roiSize / 2));
 
 
+	idealROI = image_scene(Rect(xMin, yMin, roiSize, roiSize));
+
+	// idealROI = image_scene(Rect(xMin , yMin,\
+	// 	xMin + roiSize + roiSize / 3 < xMax ? xMin + roiSize + roiSize / 3 : 500 - xMin, \
+	// 	yMin + roiSize + roiSize / 3 < yMax ? yMin + roiSize + roiSize / 3 : 500 - yMin));
+
+		cout << "hi : " << image_scene.rows << endl;
 
 	resize( idealROI, idealROI, Size( 200, 200), 0, 0, CV_INTER_NN );
+
+
 
 	Mat sharpImg(200, 200, CV_8UC1);
 
@@ -270,9 +267,22 @@ int main(int, char**)
 
 
 
-	// imshow("idealROI", sharpImg);
 
 	image_scene = idealROI.clone();
+
+
+		  	int height = image_scene.rows;
+		  	int width = image_scene.cols;
+		    int size = height * width;
+
+		    for(int i = 0; i < height; i++){
+		      for(int j = 0; j < width; j++){
+		        if(image_scene.at<uchar>(i, j) == 0){
+		          image_scene.at<uchar>(i, j) = 255;
+		        }
+		      }
+		    }
+
 
 
   // resize( image_obj, image_obj, Size( image_scene.cols, image_scene.rows), 0, 0, CV_INTER_NN );
@@ -362,14 +372,20 @@ int main(int, char**)
   }
 
   //-- Step 11: Mark and Show detected image from the background
-  imshow("DetectedImage", img_matches );
+  // imshow("DetectedImage", img_matches );
   waitKey(0);
 
 
-	imshow("s", dst);
+	// imshow("s", dst);
 
 
-	waitKey(0);
+	end = clock();
+
+	double duration = (double)(end - begin) / CLOCKS_PER_SEC;
+
+	cout << "sec : " << duration << endl;
+
+	// waitKey(0);
 
 
 	return 0;
