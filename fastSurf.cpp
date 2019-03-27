@@ -73,7 +73,7 @@ int main(int, char**)
 
 	Mat temp_image_scene = image_scene.clone();
 
-  // imshow("origin", image_scene);
+  imshow("origin", image_scene);
     //Check whether images have been loaded
   if( !image_obj.data){
     cerr<< " --(!) Error reading image1 " << endl;
@@ -89,7 +89,7 @@ int main(int, char**)
   Mat hsvImg, binaryImg, binaryImg1, binaryImg2;
 
   cvtColor(image_scene, hsvImg, CV_BGR2HSV);
-  // imshow("hsv", hsvImg);
+  imshow("hsv", hsvImg);
   cout << "hi" << endl;
 
   // inRange(hsvImg, HSV_RED_LOWER, HSV_RED_UPPER, binaryImg);
@@ -102,11 +102,11 @@ int main(int, char**)
 
 	// binaryImg = binaryImg1.clone();
 
-	// imshow("yellow", binaryImg);
+	imshow("yellow", binaryImg);
 
 	inRange(hsvImg, HSV_BLUE_LOWER, HSV_BLUE_UPPER, binaryImg1);
 
-	// imshow("blue", binaryImg1);
+	imshow("blue", binaryImg1);
 
 	binaryImg1 = binaryImg | binaryImg1;
 
@@ -239,7 +239,7 @@ int main(int, char**)
 	cvtColor(image_scene, image_scene, CV_BGR2GRAY);
 
 
-	// imshow("init", image_scene);
+	imshow("init", image_scene);
 
 ////////////////////insert/////////////////
 	Mat idealROI;
@@ -372,11 +372,11 @@ int main(int, char**)
   }
 
   //-- Step 11: Mark and Show detected image from the background
-  // imshow("DetectedImage", img_matches );
+  imshow("DetectedImage", img_matches );
   waitKey(0);
 
 
-	// imshow("s", dst);
+	imshow("s", dst);
 
 
 	end = clock();
