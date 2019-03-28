@@ -32,7 +32,7 @@ const Vec3b RGB_WHITE_LOWER = Vec3b(100, 100, 190);
 const Vec3b RGB_WHITE_UPPER = Vec3b(255, 255, 255);
 const Vec3b RGB_YELLOW_LOWER = Vec3b(225, 180, 0);
 const Vec3b RGB_YELLOW_UPPER = Vec3b(255, 255, 170);
-const Vec3b HSV_YELLOW_LOWER = Vec3b(0, 120, 130);
+const Vec3b HSV_YELLOW_LOWER = Vec3b(0, 120, 80);
 const Vec3b HSV_YELLOW_UPPER = Vec3b(40, 255, 255);
 
 const Vec3b HLS_YELLOW_LOWER = Vec3b(20, 120, 80);
@@ -59,24 +59,48 @@ void Binarization(Mat & input, Mat & output);
 
 int main(int, char**)
 {
-	Mat img_input, img_result, img_gray, img_canny;
-	Mat dilated;
+
+	Mat image_obj, image_scene;
+
+	Ptr <SURF> detector = SURF::create( minHessian );
+	Ptr <SURF> extractor = SURF::create();
+
+	//Load the Images
+	image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/TrafficSign.png", CV_LOAD_IMAGE_GRAYSCALE);
+
+
+
+				  	int height = image_obj.rows;
+				  	int width = image_obj.cols;
+				    int size = height * width;
+
+				    for(int i = 0; i < height; i++){
+				      for(int j = 0; j < width; j++){
+				        if(image_obj.at<uchar>(i, j) == 255){
+				          image_obj.at<uchar>(i, j) = 0;
+				        }
+				      }
+				    }
+
+
+	vector<KeyPoint> keypoints_obj;
+	detector->detect( image_obj, keypoints_obj );
+
+	Mat descriptors_obj;
+	extractor->compute( image_obj, keypoints_obj, descriptors_obj );
 
 
 
 
 	while(1){
 
-
 		clock_t begin, end;
 		begin = clock();
 
-	  //Load the Images
-	  Mat image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/다운로드.jpeg", CV_LOAD_IMAGE_GRAYSCALE );
-	  Mat image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/IMG_1534.JPG");
+		image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/IMG_1581.JPG");
 
-		resize( image_obj, image_obj, Size(200, 200), 0, 0, CV_INTER_NN );
-		resize( image_scene, image_scene, Size( 200, 200), 0, 0, CV_INTER_NN );
+		// resize( image_obj, image_obj, Size(200, 200), 0, 0, CV_INTER_NN );
+		resize( image_scene, image_scene, Size( 400, 400), 0, 0, CV_INTER_NN );
 
 		Mat temp_image_scene = image_scene.clone();
 
@@ -96,13 +120,13 @@ int main(int, char**)
 	  Mat hsvImg;
 	  cvtColor(image_scene, hsvImg, CV_BGR2HSV);
 
+		imshow("hsvImg", hsvImg);
+
 		//Binarization
 		Mat binaryImg;
 		Binarization(hsvImg, binaryImg);
-		imshow("binary", binaryImg);
+		// imshow("binary", binaryImg);
 
-
-		//dilate(binaryImg, binaryImg, Mat());
 
 
 		//find contours
@@ -116,6 +140,7 @@ int main(int, char**)
 		int max = -1;
 		int index = -1;
 
+		cout << "find contour : " << contours.size() << endl;
 		for (size_t i = 0; i < contours.size(); i++){
 			approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true)*0.02, true);
 
@@ -131,12 +156,12 @@ int main(int, char**)
 		int yMax = -1;
 		int yMin = 9999;
 
-		cout << "ROI_Value" << contours.at(index) << endl;
+		// cout << "ROI_Value" << contours.at(index) << endl;
 
 		vector <Point> temp = contours.at(index);
 
 		for(size_t i = 0; i < temp.size(); i++){
-			cout << "Element => " << temp.at(i).x << endl;
+			// cout << "Element => " << temp.at(i).x << endl;
 
 			int tempX = temp.at(i).x;
 			int tempY = temp.at(i).y;
@@ -157,8 +182,8 @@ int main(int, char**)
 
 			}
 
-			cout << "xMax : " << xMax << " " << "xMin : " << xMin << endl;
-			cout << "yMax : " << yMax << " " << "yMin : " << yMin << endl;
+			// cout << "xMax : " << xMax << " " << "xMin : " << xMin << endl;
+			// cout << "yMax : " << yMax << " " << "yMin : " << yMin << endl;
 
 			goodContours.push_back(contours.at(index));
 
@@ -167,15 +192,12 @@ int main(int, char**)
 
 			int roiSize = xLen > yLen ? xLen : yLen;
 
-			cout << "roiSize : " << roiSize << endl;
+			// cout << "roiSize : " << roiSize << endl;
 
 			/////////////////
 
 
 
-
-
-			cout << "hi : " << image_scene.rows << endl;
 
 
 
@@ -198,15 +220,19 @@ int main(int, char**)
 		Mat idealROI;
 
 
-		idealROI = image_scene(Rect(xMin, yMin, roiSize, roiSize));
+		idealROI = image_scene(Rect(xMin, yMin, xLen, yLen));
+
+		// erode(binaryImg, binaryImg, Mat());
+
 
 		// idealROI = image_scene(Rect(xMin , yMin,\
 		// 	xMin + roiSize + roiSize / 3 < xMax ? xMin + roiSize + roiSize / 3 : 500 - xMin, \
 		// 	yMin + roiSize + roiSize / 3 < yMax ? yMin + roiSize + roiSize / 3 : 500 - yMin));
 
-			cout << "hi : " << image_scene.rows << endl;
+			// cout << "hi : " << image_scene.rows << endl;
 
 		resize( idealROI, idealROI, Size( 200, 200), 0, 0, CV_INTER_NN );
+
 
 
 
@@ -224,17 +250,17 @@ int main(int, char**)
 		image_scene = idealROI.clone();
 
 
-			  	int height = image_scene.rows;
-			  	int width = image_scene.cols;
-			    int size = height * width;
-
-			    for(int i = 0; i < height; i++){
-			      for(int j = 0; j < width; j++){
-			        if(image_scene.at<uchar>(i, j) == 0){
-			          image_scene.at<uchar>(i, j) = 255;
-			        }
-			      }
-			    }
+			  	// int height = image_scene.rows;
+			  	// int width = image_scene.cols;
+			    // int size = height * width;
+					//
+			    // for(int i = 0; i < height; i++){
+			    //   for(int j = 0; j < width; j++){
+			    //     if(image_scene.at<uchar>(i, j) == 255){
+			    //       image_scene.at<uchar>(i, j) = 0;
+			    //     }
+			    //   }
+			    // }
 
 
 
@@ -244,17 +270,13 @@ int main(int, char**)
 
 	  // resize( image_scene, image_scene, Size( image_scene.cols, image_scene.rows), 0, 0, CV_INTER_NN );
 
-	    //-- Step 1: Detect the keypoints using SURF Detector
-	  Ptr<SURF> detector = SURF::create( minHessian );
+		//-- Step 1: Detect the keypoints using SURF Detector
 
-	  vector<KeyPoint> keypoints_obj,keypoints_scene;
-	  detector->detect( image_obj, keypoints_obj );
+	  vector<KeyPoint> keypoints_scene;
 	  detector->detect( image_scene, keypoints_scene );
 
 	    //-- Step 2: Calculate descriptors (feature vectors)
-	  Ptr <SURF> extractor = SURF::create();
-	  Mat descriptors_obj, descriptors_scene;
-	  extractor->compute( image_obj, keypoints_obj, descriptors_obj );
+	  Mat descriptors_scene;
 	  extractor->compute( image_scene, keypoints_scene, descriptors_scene );
 
 	    //-- Step 3: Matching descriptor vectors using FLANN matcher
@@ -280,55 +302,55 @@ int main(int, char**)
 	                 vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
 
 	     //-- Step 4: Localize the object
-	  vector<Point2f> obj;
-	  vector<Point2f> scene;
+	  // vector<Point2f> obj;
+	  // vector<Point2f> scene;
+		//
+	  // if(good_matches.size() >= 3){
 
-	  if(good_matches.size() >= 3){
+	    // for( int i = 0; i < good_matches.size(); i++ ){
+	    //   //-- Step 5: Get the keypoints from the  matches
+	    //   obj.push_back( keypoints_obj [good_matches[i].queryIdx ].pt );
+	    //   scene.push_back( keypoints_scene[ good_matches[i].trainIdx ].pt );
+	    // }
 
-	    for( int i = 0; i < good_matches.size(); i++ ){
-	      //-- Step 5: Get the keypoints from the  matches
-	      obj.push_back( keypoints_obj [good_matches[i].queryIdx ].pt );
-	      scene.push_back( keypoints_scene[ good_matches[i].trainIdx ].pt );
-	    }
-
-	    //-- Step 6:FindHomography
-	    Mat H;
-
-	    try { H = findHomography(obj, scene, CV_RANSAC); } catch (Exception e) {}
+	    // //-- Step 6:FindHomography
+	    // Mat H;
+			//
+	    // try { H = findHomography(obj, scene, CV_RANSAC); } catch (Exception e) {}
 
 
-	    //-- Step 7: Get the corners of the object which needs to be detected.
-	    vector<Point2f> obj_corners(4);
-	    obj_corners[0] = cvPoint(0,0);
-	    obj_corners[1] = cvPoint( image_obj.cols, 0 );
-	    obj_corners[2] = cvPoint( image_obj.cols, image_obj.rows );
-	    obj_corners[3] = cvPoint( 0, image_obj.rows );
-
-	    //-- Step 8: Get the corners of the object form the scene(background image)
-	    std::vector<Point2f> scene_corners(4);
+	    // //-- Step 7: Get the corners of the object which needs to be detected.
+	    // vector<Point2f> obj_corners(4);
+	    // obj_corners[0] = cvPoint(0,0);
+	    // obj_corners[1] = cvPoint( image_obj.cols, 0 );
+	    // obj_corners[2] = cvPoint( image_obj.cols, image_obj.rows );
+	    // obj_corners[3] = cvPoint( 0, image_obj.rows );
+			//
+	    // //-- Step 8: Get the corners of the object form the scene(background image)
+	    // std::vector<Point2f> scene_corners(4);
 
 	    //-- Step 9:Get the perspectiveTransform
 
-			if(H.data){
-				perspectiveTransform( obj_corners, scene_corners, H);
-			}
+			// if(H.data){
+			// 	perspectiveTransform( obj_corners, scene_corners, H);
+			// }
+			//
+	    // //-- Step 10: Draw lines between the corners (the mapped object in the scene - image_2 )
+	    // line( img_matches, scene_corners[0] + Point2f( image_obj.cols, 0), scene_corners[1] + Point2f( image_obj.cols, 0), Scalar(0, 255, 0), 4 );
+	    // line( img_matches, scene_corners[1] + Point2f( image_obj.cols, 0), scene_corners[2] + Point2f( image_obj.cols, 0), Scalar( 0, 255, 0), 4 );
+	    // line( img_matches, scene_corners[2] + Point2f( image_obj.cols, 0), scene_corners[3] + Point2f( image_obj.cols, 0), Scalar( 0, 255, 0), 4 );
+	    // line( img_matches, scene_corners[3] + Point2f( image_obj.cols, 0), scene_corners[0] + Point2f( image_obj.cols, 0), Scalar( 0, 255, 0), 4 );
+			//
 
-	    //-- Step 10: Draw lines between the corners (the mapped object in the scene - image_2 )
-	    line( img_matches, scene_corners[0] + Point2f( image_obj.cols, 0), scene_corners[1] + Point2f( image_obj.cols, 0), Scalar(0, 255, 0), 4 );
-	    line( img_matches, scene_corners[1] + Point2f( image_obj.cols, 0), scene_corners[2] + Point2f( image_obj.cols, 0), Scalar( 0, 255, 0), 4 );
-	    line( img_matches, scene_corners[2] + Point2f( image_obj.cols, 0), scene_corners[3] + Point2f( image_obj.cols, 0), Scalar( 0, 255, 0), 4 );
-	    line( img_matches, scene_corners[3] + Point2f( image_obj.cols, 0), scene_corners[0] + Point2f( image_obj.cols, 0), Scalar( 0, 255, 0), 4 );
 
-
-
-	  }
+	  // }
 
 	  //-- Step 11: Mark and Show detected image from the background
 	  imshow("DetectedImage", img_matches );
 	  waitKey(0);
 
 
-		imshow("s", dst);
+		// imshow("s", dst);
 
 
 		end = clock();
