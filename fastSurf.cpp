@@ -39,7 +39,7 @@ const Vec3b HLS_YELLOW_LOWER = Vec3b(20, 120, 80);
 const Vec3b HLS_YELLOW_UPPER = Vec3b(45, 200, 255);
 
 const Vec3b HSV_BLUE_LOWER = Vec3b(80, 200, 65);
-const Vec3b HSV_BLUE_UPPER = Vec3b(120, 255, 130);
+const Vec3b HSV_BLUE_UPPER = Vec3b(120, 255, 180);
 
 const Vec3b HSV_RED_LOWER = Vec3b(0, 100, 100);
 const Vec3b HSV_RED_UPPER = Vec3b(10, 255, 255);
@@ -60,15 +60,17 @@ void Binarization(Mat & input, Mat & output);
 int main(int, char**)
 {
 
+	double duration;
+
 	Mat image_obj, image_scene;
 
 	Ptr <SURF> detector = SURF::create( minHessian );
 	Ptr <SURF> extractor = SURF::create();
 
 	//Load the Images
-	image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/제목 없음.png", CV_LOAD_IMAGE_GRAYSCALE);
+	image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/init/black4.png", CV_LOAD_IMAGE_GRAYSCALE);
 
-	resize( image_obj, image_obj, Size(200, 200), 0, 0, CV_INTER_NN );
+	// resize( image_obj, image_obj, Size(200, 200), 0, 0, CV_INTER_NN );
 
 
 
@@ -86,13 +88,22 @@ int main(int, char**)
 		clock_t begin, end;
 		begin = clock();
 
-		image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/IMG_1581.JPG");
 
-		resize( image_scene, image_scene, Size( 400, 400), 0, 0, CV_INTER_NN );
+		image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/IMG_1534.jpg");
+
+		resize( image_scene, image_scene, Size( 400, 400), 0, 0, CV_INTER_LINEAR );
+
+		end = clock();
+
+		duration = (double)(end - begin) / CLOCKS_PER_SEC;
+
+		cout << "All sec : " << duration << endl;
+
+		cout << "--------------------------------------------" << endl;
 
 		Mat temp_image_scene = image_scene.clone();
 
-	  imshow("origin", image_scene);
+	  //imshow("origin", image_scene);
 	    //Check whether images have been loaded
 	  if( !image_obj.data){
 	    cerr<< " --(!) Error reading image1 " << endl;
@@ -103,6 +114,8 @@ int main(int, char**)
 	    return -1;
 	  }
 
+		clock_t beginBinarization, endBinarization;
+		beginBinarization = clock();
 
 		//RGB to HSV
 	  Mat hsvImg;
@@ -113,11 +126,22 @@ int main(int, char**)
 		//Binarization
 		Mat binaryImg;
 		Binarization(hsvImg, binaryImg);
-		// imshow("binary", binaryImg);
+		imshow("binary", binaryImg);
+
+		endBinarization = clock();
+
+		duration = (double)(endBinarization - beginBinarization) / CLOCKS_PER_SEC;
+
+		cout << "Binarization sec : " << duration << endl;
+
 
 
 
 		//find contours
+
+		clock_t beginContour, endContour;
+		beginContour = clock();
+
 		vector<vector<Point> > contours;
 		findContours(binaryImg, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
 
@@ -204,6 +228,8 @@ int main(int, char**)
 
 		imshow("init", image_scene);
 
+
+
 	////////////////////insert/////////////////
 		Mat idealROI;
 
@@ -221,13 +247,16 @@ int main(int, char**)
 
 		resize( idealROI, idealROI, Size( 200, 200), 0, 0, CV_INTER_NN );
 
+		// threshold(idealROI, idealROI, 0, 255, THRESH_BINARY | THRESH_OTSU);
+		//
+		// idealROI = ~idealROI;
+
 
 
 
 		Mat sharpImg(200, 200, CV_8UC1);
 
 		// UnsharpMaskFilter(idealROI, sharpImg, unSharpMask);
-
 		// GaussianBlur(idealROI, sharpImg, Size(5, 5), 0);
 		// GaussianBlur(image_obj, image_obj, Size(5, 5), 0);
 
@@ -237,6 +266,11 @@ int main(int, char**)
 
 		image_scene = idealROI.clone();
 
+		endContour = clock();
+
+		duration = (double)(endContour - beginContour) / CLOCKS_PER_SEC;
+
+		cout << "Contour sec : " << duration << endl;
 
 			  	// int height = image_scene.rows;
 			  	// int width = image_scene.cols;
@@ -260,12 +294,31 @@ int main(int, char**)
 
 		//-- Step 1: Detect the keypoints using SURF Detector
 
+		clock_t beginKeyPoint, endKeyPoint;
+		beginKeyPoint = clock();
+
+
 	  vector<KeyPoint> keypoints_scene;
 	  detector->detect( image_scene, keypoints_scene );
+
+		endKeyPoint = clock();
+
+		duration = (double)(endKeyPoint - beginKeyPoint) / CLOCKS_PER_SEC;
+		cout << "SURF sec : " << duration << endl;
+
+
+		clock_t beginDescriptor, endDescriptor;
+		beginDescriptor = clock();
+
 
 	    //-- Step 2: Calculate descriptors (feature vectors)
 	  Mat descriptors_scene;
 	  extractor->compute( image_scene, keypoints_scene, descriptors_scene );
+
+		endDescriptor = clock();
+
+		duration = (double)(endDescriptor - beginDescriptor) / CLOCKS_PER_SEC;
+		cout << "Calculate Descriptors sec : " << duration << endl;
 
 	    //-- Step 3: Matching descriptor vectors using FLANN matcher
 
@@ -273,7 +326,7 @@ int main(int, char**)
 	  vector< vector<DMatch> > matches;
 	  matcher->knnMatch( descriptors_obj, descriptors_scene, matches, 2 );
 
-	  const float ratio_thresh = 0.7f;
+	  const float ratio_thresh = 0.5f;
 	  vector< DMatch > good_matches;
 
 	  for(size_t i = 0; i < matches.size(); i++){
@@ -336,16 +389,18 @@ int main(int, char**)
 	  //-- Step 11: Mark and Show detected image from the background
 	  imshow("DetectedImage", img_matches );
 	  waitKey(0);
-
+	//
 
 		// imshow("s", dst);
 
 
 		end = clock();
 
-		double duration = (double)(end - begin) / CLOCKS_PER_SEC;
+		duration = (double)(end - begin) / CLOCKS_PER_SEC;
 
-		cout << "sec : " << duration << endl;
+		cout << "All sec : " << duration << endl;
+
+		cout << "--------------------------------------------" << endl;
 
 		// waitKey(0);
 
