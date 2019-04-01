@@ -66,21 +66,10 @@ int main(int, char**)
 	Ptr <SURF> extractor = SURF::create();
 
 	//Load the Images
-	image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/TrafficSign.png", CV_LOAD_IMAGE_GRAYSCALE);
+	image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/제목 없음.png", CV_LOAD_IMAGE_GRAYSCALE);
 
+	resize( image_obj, image_obj, Size(200, 200), 0, 0, CV_INTER_NN );
 
-
-				  	int height = image_obj.rows;
-				  	int width = image_obj.cols;
-				    int size = height * width;
-
-				    for(int i = 0; i < height; i++){
-				      for(int j = 0; j < width; j++){
-				        if(image_obj.at<uchar>(i, j) == 255){
-				          image_obj.at<uchar>(i, j) = 0;
-				        }
-				      }
-				    }
 
 
 	vector<KeyPoint> keypoints_obj;
@@ -99,7 +88,6 @@ int main(int, char**)
 
 		image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/IMG_1581.JPG");
 
-		// resize( image_obj, image_obj, Size(200, 200), 0, 0, CV_INTER_NN );
 		resize( image_scene, image_scene, Size( 400, 400), 0, 0, CV_INTER_NN );
 
 		Mat temp_image_scene = image_scene.clone();
