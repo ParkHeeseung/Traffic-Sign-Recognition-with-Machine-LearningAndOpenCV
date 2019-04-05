@@ -1,7 +1,7 @@
 # Traffic-Sign-Recognition-with-OpenCV
 
 # Classifier
-KNN vs SVM vs BBE
+KNN vs SVM
 
 # Feature
 Sift vs Surf vs Orb vs Hog
