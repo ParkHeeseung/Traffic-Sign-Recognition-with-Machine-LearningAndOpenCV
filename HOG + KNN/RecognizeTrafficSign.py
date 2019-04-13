@@ -1,5 +1,6 @@
 #import the necessary packages
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
 from skimage import exposure
 from skimage import feature
 from imutils import paths
@@ -27,23 +28,26 @@ for imagePath in paths.list_images(args["training"]):
 	# load the image, convert it to grayscale, and detect edges
 	image = cv2.imread(imagePath)
 	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-	edged = imutils.auto_canny(gray)
+	gray = cv2.resize(gray, (800, 800))
 
-	# find contours in the edge map, keeping only the largest one which
-	# is presmumed to be the car logo
-	cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL,
-		cv2.CHAIN_APPROX_SIMPLE)
-	cnts = cnts[0] if imutils.is_cv2() else cnts[1]
-	c = max(cnts, key=cv2.contourArea)
-
-	# extract the logo of the car and resize it to a canonical width
-	# and height
-	(x, y, w, h) = cv2.boundingRect(c)
-	logo = gray[y:y + h, x:x + w]
-	logo = cv2.resize(logo, (200, 100))
+	# edged = imutils.auto_canny(gray)
+	#
+	#
+	# # find contours in the edge map, keeping only the largest one which
+	# # is presmumed to be the car logo
+	# cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL,
+	# 	cv2.CHAIN_APPROX_SIMPLE)
+	# cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+	# c = max(cnts, key=cv2.contourArea)
+	#
+	# # extract the logo of the car and resize it to a canonical width
+	# # and height
+	# (x, y, w, h) = cv2.boundingRect(c)
+	# logo = gray[y:y + h, x:x + w]
+	logo = cv2.resize(gray, (100, 200))
 
 	# extract Histogram of Oriented Gradients from the logo
-	H = feature.hog(logo, orientations=9, pixels_per_cell=(10, 10),
+	H = feature.hog(logo, orientations=9, pixels_per_cell=(20, 20),
 		cells_per_block=(2, 2), transform_sqrt=True, block_norm="L1")
 
 	# update the data and labels
@@ -52,7 +56,9 @@ for imagePath in paths.list_images(args["training"]):
 
 # "train" the nearest neighbors classifier
 print("[INFO] training classifier...")
-model = KNeighborsClassifier(n_neighbors=1)
+model = KNeighborsClassifier(n_neighbors=3)
+# model = SVC(gamma = 'guto')
+
 model.fit(data, labels)
 print("[INFO] evaluating...")
 
@@ -62,13 +68,15 @@ for (i, imagePath) in enumerate(paths.list_images(args["test"])):
 	# the canonical size
 	image = cv2.imread(imagePath)
 	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-	logo = cv2.resize(gray, (200, 100))
+	logo = cv2.resize(gray, (100, 200))
 
 	# extract Histogram of Oriented Gradients from the test image and
 	# predict the make of the car
-	(H, hogImage) = feature.hog(logo, orientations=9, pixels_per_cell=(10, 10),
+	(H, hogImage) = feature.hog(logo, orientations=9, pixels_per_cell=(20, 20),
 		cells_per_block=(2, 2), transform_sqrt=True, block_norm="L1", visualise=True)
 	pred = model.predict(H.reshape(1, -1))[0]
+	# pred = model.predict(H)
+
 
 	# visualize the HOG image
 	hogImage = exposure.rescale_intensity(hogImage, out_range=(0, 255))
