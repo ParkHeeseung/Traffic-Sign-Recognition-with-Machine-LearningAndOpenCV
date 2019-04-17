@@ -38,14 +38,12 @@ const Vec3b HSV_YELLOW_UPPER = Vec3b(40, 255, 255);
 const Vec3b HLS_YELLOW_LOWER = Vec3b(20, 120, 80);
 const Vec3b HLS_YELLOW_UPPER = Vec3b(45, 200, 255);
 
-const Vec3b HSV_BLUE_LOWER = Vec3b(80, 160, 65);
-const Vec3b HSV_BLUE_UPPER = Vec3b(140, 255, 180);
+const Vec3b HSV_BLUE_LOWER = Vec3b(80, 200, 65);
+const Vec3b HSV_BLUE_UPPER = Vec3b(120, 255, 180);
 
 const Vec3b HSV_RED_LOWER = Vec3b(0, 100, 100);
 const Vec3b HSV_RED_UPPER = Vec3b(10, 255, 255);
 const Vec3b HSV_RED_LOWER1 = Vec3b(160, 100, 100);
-// const Vec3b HSV_RED_LOWER1 = Vec3b(50, 100, 0);
-
 const Vec3b HSV_RED_UPPER1 = Vec3b(179, 255, 255);
 
 const int MAX_SIZE = 3;
@@ -66,24 +64,26 @@ int main(int, char**)
 
 	Mat image_obj, image_scene;
 
-	Ptr <SURF> detector = SURF::create( minHessian );
-	Ptr <SURF> extractor = SURF::create();
+	Ptr <SIFT> detector = SIFT::create( minHessian );
+	Ptr <SIFT> extractor = SIFT::create();
 
 	//Load the Images
-	// image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/4 (1).png", CV_LOAD_IMAGE_GRAYSCALE);
+	// image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/init/black4.png", CV_LOAD_IMAGE_GRAYSCALE);
 
-	image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/선택 영역_021.png", CV_LOAD_IMAGE_GRAYSCALE);
+	//Load the Images
+	// image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/Narrow lane.png", CV_LOAD_IMAGE_GRAYSCALE);
+
+	image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/crosswalk.png", CV_LOAD_IMAGE_GRAYSCALE);
 	//
-	// image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/dd.png", CV_LOAD_IMAGE_GRAYSCALE);
+	// image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/curve.png", CV_LOAD_IMAGE_GRAYSCALE);
 	//
-	// image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/dynamic.png", CV_LOAD_IMAGE_GRAYSCALE);
+	// image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/dynamicObstacle.png", CV_LOAD_IMAGE_GRAYSCALE);
 	//
 	// image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/parking.png", CV_LOAD_IMAGE_GRAYSCALE);
 	//
 	// image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/static.png", CV_LOAD_IMAGE_GRAYSCALE);
 	//
 	// image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/uturn.png", CV_LOAD_IMAGE_GRAYSCALE);
-
 
 	resize( image_obj, image_obj, Size(200, 200), 0, 0, CV_INTER_NN );
 
@@ -104,9 +104,7 @@ int main(int, char**)
 		begin = clock();
 
 
-		image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/선택 영역_026.png");
-
-		imshow("origin", image_scene);
+		image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/IMG_1694.jpg");
 
 		resize( image_scene, image_scene, Size( 400, 400), 0, 0, CV_INTER_LINEAR );
 
@@ -269,14 +267,14 @@ int main(int, char**)
 
 		resize( idealROI, idealROI, Size( 200, 200), 0, 0, CV_INTER_NN );
 
-		imshow("idealROI", idealROI);
-
 		// threshold(idealROI, idealROI, 0, 255, THRESH_BINARY | THRESH_OTSU);
 		//
 		// idealROI = ~idealROI;
 
 
 
+
+		Mat sharpImg(200, 200, CV_8UC1);
 
 		// UnsharpMaskFilter(idealROI, sharpImg, unSharpMask);
 		// GaussianBlur(idealROI, sharpImg, Size(5, 5), 0);
@@ -364,49 +362,49 @@ int main(int, char**)
 	                 good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
 	                 vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
 
-	     // -- Step 4: Localize the object
-	  vector<Point2f> obj;
-	  vector<Point2f> scene;
+	     //-- Step 4: Localize the object
+	  // vector<Point2f> obj;
+	  // vector<Point2f> scene;
+		//
+	  // if(good_matches.size() >= 3){
 
-	  if(good_matches.size() >= 3){
+	    // for( int i = 0; i < good_matches.size(); i++ ){
+	    //   //-- Step 5: Get the keypoints from the  matches
+	    //   obj.push_back( keypoints_obj [good_matches[i].queryIdx ].pt );
+	    //   scene.push_back( keypoints_scene[ good_matches[i].trainIdx ].pt );
+	    // }
 
-	    for( int i = 0; i < good_matches.size(); i++ ){
-	      //-- Step 5: Get the keypoints from the  matches
-	      obj.push_back( keypoints_obj [good_matches[i].queryIdx ].pt );
-	      scene.push_back( keypoints_scene[ good_matches[i].trainIdx ].pt );
-	    }
-
-	    //-- Step 6:FindHomography
-	    Mat H;
-
-	    try { H = findHomography(obj, scene, CV_RANSAC); } catch (Exception e) {}
-
-
-	    //-- Step 7: Get the corners of the object which needs to be detected.
-	    vector<Point2f> obj_corners(4);
-	    obj_corners[0] = cvPoint(0,0);
-	    obj_corners[1] = cvPoint( image_obj.cols, 0 );
-	    obj_corners[2] = cvPoint( image_obj.cols, image_obj.rows );
-	    obj_corners[3] = cvPoint( 0, image_obj.rows );
-
-	    //-- Step 8: Get the corners of the object form the scene(background image)
-	    std::vector<Point2f> scene_corners(4);
-
-	    // -- Step 9:Get the perspectiveTransform
-
-			if(H.data){
-				perspectiveTransform( obj_corners, scene_corners, H);
-			}
-
-	    //-- Step 10: Draw lines between the corners (the mapped object in the scene - image_2 )
-	    line( img_matches, scene_corners[0] + Point2f( image_obj.cols, 0), scene_corners[1] + Point2f( image_obj.cols, 0), Scalar(0, 255, 0), 4 );
-	    line( img_matches, scene_corners[1] + Point2f( image_obj.cols, 0), scene_corners[2] + Point2f( image_obj.cols, 0), Scalar( 0, 255, 0), 4 );
-	    line( img_matches, scene_corners[2] + Point2f( image_obj.cols, 0), scene_corners[3] + Point2f( image_obj.cols, 0), Scalar( 0, 255, 0), 4 );
-	    line( img_matches, scene_corners[3] + Point2f( image_obj.cols, 0), scene_corners[0] + Point2f( image_obj.cols, 0), Scalar( 0, 255, 0), 4 );
+	    // //-- Step 6:FindHomography
+	    // Mat H;
+			//
+	    // try { H = findHomography(obj, scene, CV_RANSAC); } catch (Exception e) {}
 
 
+	    // //-- Step 7: Get the corners of the object which needs to be detected.
+	    // vector<Point2f> obj_corners(4);
+	    // obj_corners[0] = cvPoint(0,0);
+	    // obj_corners[1] = cvPoint( image_obj.cols, 0 );
+	    // obj_corners[2] = cvPoint( image_obj.cols, image_obj.rows );
+	    // obj_corners[3] = cvPoint( 0, image_obj.rows );
+			//
+	    // //-- Step 8: Get the corners of the object form the scene(background image)
+	    // std::vector<Point2f> scene_corners(4);
 
-	  }
+	    //-- Step 9:Get the perspectiveTransform
+
+			// if(H.data){
+			// 	perspectiveTransform( obj_corners, scene_corners, H);
+			// }
+			//
+	    // //-- Step 10: Draw lines between the corners (the mapped object in the scene - image_2 )
+	    // line( img_matches, scene_corners[0] + Point2f( image_obj.cols, 0), scene_corners[1] + Point2f( image_obj.cols, 0), Scalar(0, 255, 0), 4 );
+	    // line( img_matches, scene_corners[1] + Point2f( image_obj.cols, 0), scene_corners[2] + Point2f( image_obj.cols, 0), Scalar( 0, 255, 0), 4 );
+	    // line( img_matches, scene_corners[2] + Point2f( image_obj.cols, 0), scene_corners[3] + Point2f( image_obj.cols, 0), Scalar( 0, 255, 0), 4 );
+	    // line( img_matches, scene_corners[3] + Point2f( image_obj.cols, 0), scene_corners[0] + Point2f( image_obj.cols, 0), Scalar( 0, 255, 0), 4 );
+			//
+
+
+	  // }
 
 	  //-- Step 11: Mark and Show detected image from the background
 	  imshow("DetectedImage", img_matches );
@@ -461,15 +459,10 @@ void Binarization(Mat & input, Mat & output){
 
 	Mat redBinaryImg, redBinaryImg1, yellowBinaryImg, blueBinaryImg;
 
-	inRange(input, HSV_RED_LOWER, HSV_RED_UPPER, redBinaryImg);
-	inRange(input, HSV_RED_LOWER1, HSV_RED_UPPER1, redBinaryImg1);
-
 	inRange(input, HSV_YELLOW_LOWER, HSV_YELLOW_UPPER, yellowBinaryImg);
 
 	inRange(input, HSV_BLUE_LOWER, HSV_BLUE_UPPER, blueBinaryImg);
 
-	output = (yellowBinaryImg | blueBinaryImg) & (~(redBinaryImg | redBinaryImg1));
-
-
+	output = yellowBinaryImg | blueBinaryImg;
 
 }
