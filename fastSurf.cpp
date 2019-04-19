@@ -104,7 +104,7 @@ int main(int, char**)
 		begin = clock();
 
 
-		image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/선택 영역_026.png");
+		image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/선택 영역_023.png");
 
 		imshow("origin", image_scene);
 

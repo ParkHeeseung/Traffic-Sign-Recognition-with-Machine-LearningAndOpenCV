@@ -16,6 +16,8 @@ ap.add_argument("-d", "--training", required=True, help="Path to the logos train
 ap.add_argument("-t", "--test", required=True, help="Path to the test dataset")
 args = vars(ap.parse_args())
 
+
+
 # initialize the data matrix and labels
 print ("[INFO] extracting features...")
 data = []
@@ -49,7 +51,7 @@ for imagePath in paths.list_images(args["training"]):
 	# # and height
 	# (x, y, w, h) = cv2.boundingRect(c)
 	# logo = gray[y:y + h, x:x + w]
-	logo = cv2.resize(erosion, (150, 150))
+	logo = cv2.resize(erosion, (70, 70))
 	cv2.imshow("logo", logo)
 	cv2.waitKey(0)
 
@@ -80,7 +82,7 @@ for (i, imagePath) in enumerate(paths.list_images(args["test"])):
 	erosion = cv2.erode(gray, kernel, iterations=1)
 
 
-	logo = cv2.resize(erosion, (150, 150))
+	logo = cv2.resize(erosion, (70, 70))
 	cv2.imshow("reuslt", logo)
 	# logo = logo[50:350, 50:350]
 
