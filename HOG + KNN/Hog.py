@@ -5,7 +5,7 @@ from skimage import feature
 import cv2
 
 
-frame = cv2.imread("선택 영역_020.png", cv2.IMREAD_GRAYSCALE)
+frame = cv2.imread("idealROI_screenshot_21.04.2019.png", cv2.IMREAD_GRAYSCALE)
 
 (H, hogImage) = feature.hog(frame, orientations=9, pixels_per_cell=(8, 8),
 	cells_per_block=(2, 2), transform_sqrt=True, block_norm="L1",

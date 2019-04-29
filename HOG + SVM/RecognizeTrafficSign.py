@@ -4,19 +4,18 @@ from sklearn.svm import SVC
 from skimage import exposure
 from skimage import feature
 from imutils import paths
+from matplotlib import pyplot as plt
+
 
 import argparse
 import imutils
 import cv2
-import numpy as np
 
 #construct the argument parse and parse command line arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-d", "--training", required=True, help="Path to the logos training dataset")
 ap.add_argument("-t", "--test", required=True, help="Path to the test dataset")
 args = vars(ap.parse_args())
-
-
 
 # initialize the data matrix and labels
 print ("[INFO] extracting features...")
@@ -31,11 +30,7 @@ for imagePath in paths.list_images(args["training"]):
 	# load the image, convert it to grayscale, and detect edges
 	image = cv2.imread(imagePath)
 	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-	gray = cv2.resize(gray, (400, 400))
-
-	kernel = np.ones((5, 5), np.uint8)
-	erosion = cv2.erode(gray, kernel, iterations=1)
+	gray = cv2.resize(gray, (200, 200))
 
 	# edged = imutils.auto_canny(gray)
 
@@ -51,14 +46,17 @@ for imagePath in paths.list_images(args["training"]):
 	# # and height
 	# (x, y, w, h) = cv2.boundingRect(c)
 	# logo = gray[y:y + h, x:x + w]
-	logo = cv2.resize(erosion, (50, 50))
-	cv2.imshow("logo", logo)
-	cv2.waitKey(0)
+	logo = cv2.resize(gray, (200, 200))
+
 
 	# extract Histogram of Oriented Gradients from the logo
-	H = feature.hog(logo, orientations=8, pixels_per_cell=(8, 8),
-		cells_per_block=(2, 2), transform_sqrt=True, block_norm="L2")
+	(H, hogImage) = feature.hog(logo, orientations=8, pixels_per_cell=(16, 16),
+		cells_per_block=(4, 4), transform_sqrt=True, block_norm="L2",visualise=True)
 
+	hogImage = exposure.rescale_intensity(hogImage, out_range=(0, 255))
+	hogImage = hogImage.astype("uint8")
+	cv2.imshow("Hog", hogImage)
+	cv2.waitKey(0)
 	# update the data and labels
 	data.append(H)
 	labels.append(make)
@@ -66,7 +64,7 @@ for imagePath in paths.list_images(args["training"]):
 # "train" the nearest neighbors classifier
 print("[INFO] training classifier...")
 model = KNeighborsClassifier(n_neighbors=1)
-# model = SVC(gamma = 'guto')
+# model = SVC()
 
 model.fit(data, labels)
 print("[INFO] evaluating...")
@@ -78,22 +76,14 @@ for (i, imagePath) in enumerate(paths.list_images(args["test"])):
 	image = cv2.imread(imagePath)
 	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-	kernel = np.ones((5, 5), np.uint8)
-	erosion = cv2.erode(gray, kernel, iterations=1)
-
-
-	logo = cv2.resize(erosion, (50, 50))
-	cv2.imshow("reuslt", logo)
+	logo = cv2.resize(gray, (200, 200))
 	# logo = logo[50:350, 50:350]
 
 	# extract Histogram of Oriented Gradients from the test image and
 	# predict the make of the car
-	(H, hogImage) = feature.hog(logo, orientations=8, pixels_per_cell=(8, 8),
-		cells_per_block=(2, 2), transform_sqrt=True, block_norm="L2", visualise=True)
+	(H, hogImage) = feature.hog(logo, orientations=8, pixels_per_cell=(16, 16),
+		cells_per_block=(4, 4), transform_sqrt=True, block_norm="L2", visualise=True)
 	pred = model.predict(H.reshape(1, -1))[0]
-	pred1 = model.predict_proba(H.reshape(1, -1))[0]
-	print(pred1)
-	#print(dir(pred))
 	# pred = model.predict(H)
 
 
