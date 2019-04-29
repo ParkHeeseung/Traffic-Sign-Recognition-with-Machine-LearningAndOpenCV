@@ -51,8 +51,8 @@ for imagePath in paths.list_images(args["training"]):
 	# # and height
 	# (x, y, w, h) = cv2.boundingRect(c)
 	# logo = gray[y:y + h, x:x + w]
-	logo = cv2.resize(erosion, (50, 50))
-	cv2.imshow("logo", logo)
+	logo = cv2.resize(erosion, (48, 48))
+	# cv2.imshow("logo", logo)
 	cv2.waitKey(0)
 
 	# extract Histogram of Oriented Gradients from the logo
@@ -69,6 +69,7 @@ model = KNeighborsClassifier(n_neighbors=1)
 # model = SVC(gamma = 'guto')
 
 model.fit(data, labels)
+print(model)
 print("[INFO] evaluating...")
 
 # loop over the test dataset
@@ -82,8 +83,8 @@ for (i, imagePath) in enumerate(paths.list_images(args["test"])):
 	erosion = cv2.erode(gray, kernel, iterations=1)
 
 
-	logo = cv2.resize(erosion, (50, 50))
-	cv2.imshow("reuslt", logo)
+	logo = cv2.resize(erosion, (48, 48))
+	# cv2.imshow("reuslt", logo)
 	# logo = logo[50:350, 50:350]
 
 	# extract Histogram of Oriented Gradients from the test image and
@@ -100,7 +101,7 @@ for (i, imagePath) in enumerate(paths.list_images(args["test"])):
 	# visualize the HOG image
 	hogImage = exposure.rescale_intensity(hogImage, out_range=(0, 255))
 	hogImage = hogImage.astype("uint8")
-	cv2.imshow("HOG Image #{}".format(i + 1), hogImage)
+	# cv2.imshow("HOG Image #{}".format(i + 1), hogImage)
 
 	# draw the prediction on the test image and display it
 	cv2.putText(image, pred.title(), (10, 35), cv2.FONT_HERSHEY_SIMPLEX, 1.0,
