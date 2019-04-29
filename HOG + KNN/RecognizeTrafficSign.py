@@ -51,7 +51,7 @@ for imagePath in paths.list_images(args["training"]):
 	# # and height
 	# (x, y, w, h) = cv2.boundingRect(c)
 	# logo = gray[y:y + h, x:x + w]
-	logo = cv2.resize(erosion, (70, 70))
+	logo = cv2.resize(erosion, (50, 50))
 	cv2.imshow("logo", logo)
 	cv2.waitKey(0)
 
@@ -82,7 +82,7 @@ for (i, imagePath) in enumerate(paths.list_images(args["test"])):
 	erosion = cv2.erode(gray, kernel, iterations=1)
 
 
-	logo = cv2.resize(erosion, (70, 70))
+	logo = cv2.resize(erosion, (50, 50))
 	cv2.imshow("reuslt", logo)
 	# logo = logo[50:350, 50:350]
 
@@ -91,6 +91,9 @@ for (i, imagePath) in enumerate(paths.list_images(args["test"])):
 	(H, hogImage) = feature.hog(logo, orientations=8, pixels_per_cell=(8, 8),
 		cells_per_block=(2, 2), transform_sqrt=True, block_norm="L2", visualise=True)
 	pred = model.predict(H.reshape(1, -1))[0]
+	pred1 = model.predict_proba(H.reshape(1, -1))[0]
+	print(pred1)
+	#print(dir(pred))
 	# pred = model.predict(H)
 
 

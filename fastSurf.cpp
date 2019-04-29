@@ -72,7 +72,7 @@ int main(int, char**)
 	//Load the Images
 	// image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/4 (1).png", CV_LOAD_IMAGE_GRAYSCALE);
 
-	image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/선택 영역_021.png", CV_LOAD_IMAGE_GRAYSCALE);
+	image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/선택 영역_027.png", CV_LOAD_IMAGE_GRAYSCALE);
 	//
 	// image_obj = imread( "/home/suki/바탕화면/Traffic Sign Recognition/image/dd.png", CV_LOAD_IMAGE_GRAYSCALE);
 	//
@@ -104,7 +104,7 @@ int main(int, char**)
 		begin = clock();
 
 
-		image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/선택 영역_023.png");
+		image_scene = imread("/home/suki/바탕화면/Traffic Sign Recognition/image/선택 영역_027.png");
 
 		imshow("origin", image_scene);
 
@@ -153,7 +153,7 @@ int main(int, char**)
 
 
 
-		dilate(binaryImg, binaryImg, Mat());
+		// dilate(binaryImg, binaryImg, Mat());
 
 		//find contours
 
