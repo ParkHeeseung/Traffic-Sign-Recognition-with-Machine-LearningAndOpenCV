@@ -12,7 +12,7 @@ HSV_YELLOW_UPPER = np.array([40, 255, 255])
 HSV_BLUE_LOWER = np.array([80, 160, 65])
 HSV_BLUE_UPPER = np.array([140, 255, 180])
 
-img = cv2.imread("/home/suki/바탕화면/Traffic Sign Recognition/image/선택 영역_049.png")
+img = cv2.imread("/home/suki/바탕화면/Traffic Sign Recognition/image/선택 영역_051.png")
 cv2.imshow("frame", img)
 
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -48,7 +48,9 @@ for cnt in goodContours:
     print(area)
     if area > 200.0 :
         x, y, w, h = cv2.boundingRect(cnt)
-        img = cv2.rectangle(img, (x, y), (x+w, y+h), (150, 255, 0), 2)
+        rate = w / h
+        if rate > 0.8 and rate < 1.2:
+            img = cv2.rectangle(img, (x, y), (x+w, y+h), (150, 255, 0), 2)
         # inputData.append(gray[x:y, x+w:y+h])
 
 
