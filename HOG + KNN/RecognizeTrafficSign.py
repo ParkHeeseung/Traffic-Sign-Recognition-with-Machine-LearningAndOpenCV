@@ -10,6 +10,7 @@ import imutils
 import cv2
 import numpy as np
 
+
 #construct the argument parse and parse command line arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-d", "--training", required=True, help="Path to the logos training dataset")
