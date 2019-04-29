@@ -1,6 +1,8 @@
 # Traffic-Sign-Recognition-with-OpenCV
 효과적인 전처리를 통한 표지판 후보군을 뽑아낸 후 Feature Vector로 학습된 분류기에 넣어 표지판을 구별한다.
 
+![d](https://user-images.githubusercontent.com/31951367/56875289-cda1d400-6a7a-11e9-90ee-2ec500e8160c.png)
+
 # Image preprocessing
 1. HSV변환 및 이진화
 2. 후보군 검출(Contours & Standard)
