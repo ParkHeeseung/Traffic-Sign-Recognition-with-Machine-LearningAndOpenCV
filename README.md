@@ -8,7 +8,8 @@
 2. 후보군 검출(Contours & Standard)
 3. 후보군 ROI 설정
 
-분류기에 들어갈 후보군들
+Image preprocessing으로 검출된 분류기에 들어갈 후보군의 
+
 ![candidates_screenshot_29 04 2019](https://user-images.githubusercontent.com/31951367/56879013-c76b2200-6a91-11e9-9f55-853595b28a3e.png)
 
 
