@@ -3,6 +3,9 @@
 
 ![d](https://user-images.githubusercontent.com/31951367/56875289-cda1d400-6a7a-11e9-90ee-2ec500e8160c.png)
 
+# Video
+https://youtu.be/Xa4ugW0iFbs
+
 # Image preprocessing
 1. HSV변환 및 이진화
 2. 후보군 검출(Contours & Standard)
