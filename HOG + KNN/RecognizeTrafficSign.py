@@ -20,7 +20,7 @@ args = vars(ap.parse_args())
 
 
 # initialize the data matrix and labels
-print ("[INFO] extracting features...")
+print ("INFO] extracting features...")
 data = []
 labels = []
 
@@ -35,7 +35,7 @@ for imagePath in paths.list_images(args["training"]):
 
 	gray = cv2.resize(gray, (400, 400))
 
-	kernel = np.ones((5, 5), np.uint8)
+	kernel = np.ones((3, 3), np.uint8)
 	erosion = cv2.erode(gray, kernel, iterations=1)
 
 	# edged = imutils.auto_canny(gray)
@@ -80,7 +80,7 @@ for (i, imagePath) in enumerate(paths.list_images(args["test"])):
 	image = cv2.imread(imagePath)
 	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-	kernel = np.ones((5, 5), np.uint8)
+	kernel = np.ones((3, 3), np.uint8)
 	erosion = cv2.erode(gray, kernel, iterations=1)
 
 
